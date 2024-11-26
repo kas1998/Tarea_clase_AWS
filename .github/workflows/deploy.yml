@@ -1,0 +1,27 @@
+name: Deploy to EC2
+
+on:
+  push:
+    branches:
+      - main  # O la rama que uses para hacer cambios
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Check out the code
+        uses: actions/checkout@v2
+
+      - name: Set up SSH
+        uses: webfactory/ssh-agent@v0.5.3
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}  # Agregar la clave SSH en los secrets de GitHub
+
+      - name: SSH into EC2 and deploy
+        run: |
+          ssh -o StrictHostKeyChecking=no ubuntu@<EC2-PUBLIC-IP> << 'EOF'
+            cd /home/ubuntu/tu-repositorio
+            git pull origin main
+            # Aquí puedes agregar otros comandos como reiniciar servicios
+            EOF
