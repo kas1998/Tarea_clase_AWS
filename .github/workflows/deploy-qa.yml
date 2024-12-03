@@ -23,8 +23,8 @@ jobs:
 
       - name: Deploy to QA instance
         run: |
-          scp -o StrictHostKeyChecking=no -r ./index.html ec2-user@3.84.201.212:/var/www/html
-          ssh -o StrictHostKeyChecking=no ec2-user@3.84.201.212 "sudo systemctl restart httpd"
+          scp -o StrictHostKeyChecking=no -r ./index.html ec2-user@52.91.63.208:/var/www/html
+          ssh -o StrictHostKeyChecking=no ec2-user@52.91.63.208 "sudo systemctl restart httpd"
 
   deploy-production:
     if: github.ref == 'refs/heads/main'
