@@ -1,0 +1,41 @@
+name: Deploy to AWS
+
+on:
+  push:
+    branches:
+      - qa
+      - main
+
+jobs:
+  deploy:
+    name: Deploy to AWS Instances
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Setup SSH
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 700 ~/.ssh
+          chmod 600 ~/.ssh/id_rsa
+
+      - name: Test SSH connection to EC_AWS
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@52.201.212.184 "echo 'SSH connection successful'"
+
+      - name: Deploy to QA
+        if: github.ref == 'refs/heads/qa'
+        run: |
+          ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@52.201.212.184 "sudo rm -rf /var/www/html/*"
+          scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa index.html ec2-user@52.201.212.184:/var/www/html/
+
+      - name: Deploy to Production
+        if: github.ref == 'refs/heads/main'
+        run: |
+          for host in 52.91.181.82 44.211.241.2 3.227.22.30; do
+            ssh -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa ec2-user@$host "sudo rm -rf /var/www/html/*"
+            scp -o StrictHostKeyChecking=no -i ~/.ssh/id_rsa index.html ec2-user@$host:/var/www/html/
+          done
